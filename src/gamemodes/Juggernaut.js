@@ -1,5 +1,7 @@
 var Experimental = require('./Experimental'); // Hijacking some of those features
 var Virus = require('../entity/Virus');
+var PlayerCell = require('../entity/PlayerCell');
+var Cell = require('../entity/Cell');
 
 function Juggernaut() {
     Experimental.apply(this, Array.prototype.slice.call(arguments));
@@ -67,6 +69,42 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
             );
         }
         return this.virusFeedAmount;
+    };
+
+    PlayerCell.prototype.onAutoMove = function(gameServer) {
+        if (this.owner.cells.length == 2) {
+            // Check for viruses
+            var v = gameServer.getNearestVirus(this);
+            // Swap with virus if it exists
+            // +1 to avoid swapping when the cell is just
+            // barely larger than the virus (looks unnatural)
+            // This is not necessary, but looks nicer on the client
+            if (v && v.mass > this.mass+1) {
+                var thisAngle = this.getAngle();
+                v.setAngle(thisAngle+3.14);
+                v.setMoveEngineData(85,20,0.85);
+
+                // Move the player's other cell
+                // For loop just to avoid conditions
+                // where the other cell might be inaccessable
+                for(var i = 0; i < this.owner.cells.length; i++) {
+                    this.owner.cells[i].setAngle(thisAngle);
+                    this.owner.cells[i].setMoveEngineData(85,20,0.85);
+                    gameServer.setAsMovingNode(this.owner.cells[i]);
+                }
+
+                gameServer.setAsMovingNode(v);
+                gameServer.removeNode(this);
+                return true;
+            }
+        }
+    };
+
+    PlayerCell.prototype.calcMovePhys = function(config) {
+        Cell.prototype.calcMovePhys.call(this, config);
+        if (this.moveEngineTicks > 0) {
+            this.onAutoMove(this.gameServer);
+        }
     };
 
 }
