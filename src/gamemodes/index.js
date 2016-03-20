@@ -9,7 +9,8 @@ module.exports = {
     Debug: require('./Debug'),
     Zombie: require('./Zombie'),
     TeamZ: require('./TeamZ.js'),
-    TeamX: require('./TeamX.js')
+    TeamX: require('./TeamX.js'),
+    Juggernaut: require('./Juggernaut.js')
 };
 
 var get = function(id) {
@@ -41,6 +42,9 @@ var get = function(id) {
             break;
         case 21: // Debug
             mode = new module.exports.Debug();
+            break;
+        case 30: // Juggernaut
+            mode = new module.exports.Juggernaut();
             break;
         default: // FFA is default
             mode = new module.exports.FFA();
