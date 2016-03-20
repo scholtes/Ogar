@@ -104,7 +104,9 @@ function GameServer() {
         virusMaxFeedAmount: 10, // Max amount of times to feed a virus to shoot it
         virusBackfireProbability: 0.0666, // Probability that shooting a virus will backfire
         virusSpreadAngle: 0.524, // Angle between viruses that are shot out (if more than 1 virus shot)
-        virusSplitNoProb: [0.75, 0.20, 0.04, 0.01] // Probabilities of n viruses being shot (see config file for details)
+        virusSplitNoProb: [0.75, 0.20, 0.04, 0.01], // Probabilities of n viruses being shot (see config file for details)
+        movingVirusMass: 100, // Mass of a moving virus
+        movingVirusMinAmount: 10 // Min number of moving viruses present on the board
     };
     // Parse config
     this.loadConfig();

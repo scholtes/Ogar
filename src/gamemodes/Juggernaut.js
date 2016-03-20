@@ -2,6 +2,7 @@ var Experimental = require('./Experimental'); // Hijacking some of those feature
 var Virus = require('../entity/Virus');
 var PlayerCell = require('../entity/PlayerCell');
 var Cell = require('../entity/Cell');
+var MovingVirus = require('../entity/MovingVirus');
 
 function Juggernaut() {
     Experimental.apply(this, Array.prototype.slice.call(arguments));
@@ -9,6 +10,8 @@ function Juggernaut() {
     this.ID = 30;
     this.name = "Juggernaut";
     this.specByLeaderboard = true;
+
+    this.movingVirusCount = 0;
 }
 
 module.exports = Juggernaut;
@@ -134,7 +137,7 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
             // +1 to avoid swapping when the cell is just
             // barely larger than the virus (looks unnatural)
             // This is not necessary, but looks nicer on the client
-            if (v && v.mass > this.mass+1) {
+            if (v && v.mass > this.mass+1 && v.moveEngineTicks === 0) {
                 var thisAngle = this.getAngle();
                 v.setAngle(thisAngle+3.14);
                 v.setMoveEngineData(85,20,0.85);
@@ -277,6 +280,70 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
             check.owner.makeNotJuggernaut();
         }
         oldRemoveNode.call(this, check);
-    }
+    };
+};
 
-}
+Juggernaut.prototype.spawnMovingVirus = function(gameServer) {
+    // Checks if there are enough moving viruses on the map
+    if (this.movingVirusCount < gameServer.config.movingVirusMinAmount) {
+        // Spawns a mother cell
+        var pos = gameServer.getRandomPosition();
+
+        // Check for players
+        for (var i = 0; i < gameServer.nodesPlayer.length; i++) {
+            var check = gameServer.nodesPlayer[i];
+
+            var r = check.getSize(); // Radius of checking player cell
+
+            // Collision box
+            var topY = check.position.y - r;
+            var bottomY = check.position.y + r;
+            var leftX = check.position.x - r;
+            var rightX = check.position.x + r;
+
+            // Check for collisions
+            if (pos.y > bottomY) {
+                continue;
+            }
+
+            if (pos.y < topY) {
+                continue;
+            }
+
+            if (pos.x > rightX) {
+                continue;
+            }
+
+            if (pos.x < leftX) {
+                continue;
+            }
+
+            // Collided
+            return;
+        }
+
+        // Spawn if no cells are colliding
+        var m = new MovingVirus(
+                gameServer.getNextNodeId(),
+                null,
+                pos,
+                gameServer.config.movingVirusMass + Math.floor(50*Math.random())
+        );
+        gameServer.movingNodes.push(m);
+        gameServer.addNode(m);
+    }
+};
+
+Juggernaut.prototype.onTick = function(gameServer) {
+    // Mother Cell updates
+    this.updateMotherCells(gameServer);
+
+    // Mother Cell and MovingVirus Spawning
+    if (this.tickMotherS >= this.motherSpawnInterval) {
+        this.spawnMotherCell(gameServer);
+        this.spawnMovingVirus(gameServer);
+        this.tickMotherS = 0;
+    } else {
+        this.tickMotherS++;
+    }
+};
