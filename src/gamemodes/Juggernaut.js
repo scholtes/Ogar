@@ -18,6 +18,10 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
     Virus.prototype.virusFeedAmount = null;
 
     Virus.prototype.feed = function(feeder, gameServer) {
+        if (Math.random() < gameServer.config.virusBackfireProbability) {
+            feeder.angle = feeder.getAngle() + 3.14;
+        }
+
         if (this.moveEngineTicks == 0) this.setAngle(feeder.getAngle()); // Set direction if the virus explodes
         this.mass += feeder.mass;
         this.fed++; // Increase feed count
