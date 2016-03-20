@@ -422,11 +422,50 @@ Juggernaut.prototype.spawnStickyCell = function(gameServer) {
     }
 };
 
-Experimental.prototype.updateStickyCells = function(gameServer) {
+Juggernaut.prototype.updateStickyCells = function(gameServer) {
     for (var i in this.nodesSticky) {
         var sticky = this.nodesSticky[i];
         sticky.update(gameServer);
     }
+};
+
+Juggernaut.prototype.updateMotherCells = function(gameServer) {
+    for (var i in this.nodesMother) {
+        var mother = this.nodesMother[i];
+
+        // Checks
+        mother.update(gameServer);
+        mother.checkEat(gameServer);
+
+        // TODO: move the following checks into monkey-patch of
+        // MotherCell.prototype.update if/when MotherCell is moved
+        if (mother.mass > gameServer.config.motherCellMaxMass) {
+            mother.mass = gameServer.config.motherCellMaxMass;
+            // Spit out a virus if there aren't too many
+            if(gameServer.nodesVirus.length < gameServer.config.virusMaxAmount) {
+                mother.setAngle(Math.random() * 6.28);
+                this.shootVirus(mother, gameServer);
+                mother.mass -= gameServer.config.virusStartMass;
+            }
+        }
+    }
+};
+
+Juggernaut.prototype.shootVirus = function(parent, gameServer) {
+    // Unlike gameServer, we must start outside or the mother cell will eat it
+    parentRadius = 0.5*parent.getSize();
+    var parentPos = {
+        x: parent.position.x + Math.sin(parent.angle)*parentRadius,
+        y: parent.position.y + Math.cos(parent.angle)*parentRadius
+    };
+
+    var newVirus = new Virus(gameServer.getNextNodeId(), null, parentPos, gameServer.config.virusStartMass, gameServer);
+    newVirus.setAngle(parent.getAngle());
+    newVirus.setMoveEngineData(135, 20, 0.85);
+
+    // Add to moving cells list
+    gameServer.addNode(newVirus);
+    gameServer.setAsMovingNode(newVirus);
 };
 
 Juggernaut.prototype.onTick = function(gameServer) {

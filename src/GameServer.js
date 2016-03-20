@@ -108,7 +108,8 @@ function GameServer() {
         movingVirusMass: 100, // Mass of a moving virus
         movingVirusMinAmount: 10, // Min number of moving viruses present on the board
         stickyMass: 75, // Mass of a sticky cell
-        stickyMinAmount: 3 // Mass of a sticky cell
+        stickyMinAmount: 3, // Mass of a sticky cell
+        motherCellMaxMass: 400 // In juggernaut mode, mother cells shoot out viruses if they grow beyond this
     };
     // Parse config
     this.loadConfig();
