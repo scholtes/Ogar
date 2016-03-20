@@ -106,7 +106,9 @@ function GameServer() {
         virusSpreadAngle: 0.524, // Angle between viruses that are shot out (if more than 1 virus shot)
         virusSplitNoProb: [0.75, 0.20, 0.04, 0.01], // Probabilities of n viruses being shot (see config file for details)
         movingVirusMass: 100, // Mass of a moving virus
-        movingVirusMinAmount: 10 // Min number of moving viruses present on the board
+        movingVirusMinAmount: 10, // Min number of moving viruses present on the board
+        stickyMass: 75, // Mass of a sticky cell
+        stickyMinAmount: 3 // Mass of a sticky cell
     };
     // Parse config
     this.loadConfig();

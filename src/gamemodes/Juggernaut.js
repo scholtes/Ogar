@@ -3,6 +3,7 @@ var Virus = require('../entity/Virus');
 var PlayerCell = require('../entity/PlayerCell');
 var Cell = require('../entity/Cell');
 var MovingVirus = require('../entity/MovingVirus');
+var StickyCell = require('../entity/StickyCell');
 
 function Juggernaut() {
     Experimental.apply(this, Array.prototype.slice.call(arguments));
@@ -12,6 +13,7 @@ function Juggernaut() {
     this.specByLeaderboard = true;
 
     this.movingVirusCount = 0;
+    this.nodesSticky = [];
 }
 
 module.exports = Juggernaut;
@@ -370,14 +372,73 @@ Juggernaut.prototype.spawnMovingVirus = function(gameServer) {
     }
 };
 
+Juggernaut.prototype.spawnStickyCell = function(gameServer) {
+    // Checks if there are enough moving viruses on the map
+    if (this.nodesSticky.length < gameServer.config.stickyMinAmount) {
+        // Spawns a mother cell
+        var pos = gameServer.getRandomPosition();
+
+        // Check for players
+        for (var i = 0; i < gameServer.nodesPlayer.length; i++) {
+            var check = gameServer.nodesPlayer[i];
+
+            var r = check.getSize(); // Radius of checking player cell
+
+            // Collision box
+            var topY = check.position.y - r;
+            var bottomY = check.position.y + r;
+            var leftX = check.position.x - r;
+            var rightX = check.position.x + r;
+
+            // Check for collisions
+            if (pos.y > bottomY) {
+                continue;
+            }
+
+            if (pos.y < topY) {
+                continue;
+            }
+
+            if (pos.x > rightX) {
+                continue;
+            }
+
+            if (pos.x < leftX) {
+                continue;
+            }
+
+            // Collided
+            return;
+        }
+
+        // Spawn if no cells are colliding
+        var m = new StickyCell(
+                gameServer.getNextNodeId(),
+                null,
+                pos,
+                gameServer.config.stickyMass
+        );
+        gameServer.addNode(m);
+    }
+};
+
+Experimental.prototype.updateStickyCells = function(gameServer) {
+    for (var i in this.nodesSticky) {
+        var sticky = this.nodesSticky[i];
+        sticky.update(gameServer);
+    }
+};
+
 Juggernaut.prototype.onTick = function(gameServer) {
     // Mother Cell updates
     this.updateMotherCells(gameServer);
+    this.updateStickyCells(gameServer);
 
     // Mother Cell and MovingVirus Spawning
     if (this.tickMotherS >= this.motherSpawnInterval) {
         this.spawnMotherCell(gameServer);
         this.spawnMovingVirus(gameServer);
+        this.spawnStickyCell(gameServer);
         this.tickMotherS = 0;
     } else {
         this.tickMotherS++;
