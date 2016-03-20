@@ -102,7 +102,9 @@ function GameServer() {
         tourneyAutoFillPlayers: 1, // The timer for filling the server with bots will not count down unless there is this amount of real players
         virusMinFeedAmount: 5, // Min amount of times to feed a virus to shoot it
         virusMaxFeedAmount: 10, // Max amount of times to feed a virus to shoot it
-        virusBackfireProbability: 0.0666 // Probability that shooting a virus will backfire
+        virusBackfireProbability: 0.0666, // Probability that shooting a virus will backfire
+        virusSpreadAngle: 0.524, // Angle between viruses that are shot out (if more than 1 virus shot)
+        virusSplitNoProb: [0.75, 0.20, 0.04, 0.01] // Probabilities of n viruses being shot (see config file for details)
     };
     // Parse config
     this.loadConfig();
