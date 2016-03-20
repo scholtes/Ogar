@@ -122,10 +122,28 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
 
     var oldVirusOnConsume = Virus.prototype.onConsume;
     Virus.prototype.onConsume = function(consumer, gameServer) {
+        var oldIDs = consumer.owner.cells.map(function(cell){return cell.nodeId});
         if(consumer.owner.juggernaut) {
             consumer.owner.makeNotJuggernaut();
         }
         oldVirusOnConsume.call(this, consumer, gameServer);
+        // Do color stuff
+        for (var i = 0; i < consumer.owner.cells.length; i++) {
+            if (oldIDs.indexOf(consumer.owner.cells[i].nodeId) < 0) {
+                var split = consumer.owner.cells[i];
+                split.color.r += Math.floor(48*Math.random()) - 24;
+                split.color.g += Math.floor(48*Math.random()) - 24;
+                split.color.b += Math.floor(48*Math.random()) - 24;
+
+                if(split.color.r < 0) { split.color.r = 0; }
+                if(split.color.g < 0) { split.color.g = 0; }
+                if(split.color.b < 0) { split.color.b = 0; }
+
+                if(split.color.r > 255) { split.color.r = 255; }
+                if(split.color.g > 255) { split.color.g = 255; }
+                if(split.color.b > 255) { split.color.b = 255; }
+            }
+        }
     };
 
     PlayerCell.prototype.onAutoMove = function(gameServer) {
@@ -189,10 +207,28 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
 
     var oldSplitCells = Object.getPrototypeOf(gameServer).splitCells;
     Object.getPrototypeOf(gameServer).splitCells = function(client) {
+        var oldIDs = client.cells.map(function(cell){return cell.nodeId});
         if (client.juggernaut) {
             return;
         }
         oldSplitCells.call(this, client);
+        for (var i = 0; i < client.cells.length; i++) {
+            if (oldIDs.indexOf(client.cells[i].nodeId) < 0) {
+                // Slightly randomize color (formulated to stay in 0 - 255)
+                var split = client.cells[i];
+                split.color.r += Math.floor(48*Math.random()) - 24;
+                split.color.g += Math.floor(48*Math.random()) - 24;
+                split.color.b += Math.floor(48*Math.random()) - 24;
+
+                if(split.color.r < 0) { split.color.r = 0; }
+                if(split.color.g < 0) { split.color.g = 0; }
+                if(split.color.b < 0) { split.color.b = 0; }
+
+                if(split.color.r > 255) { split.color.r = 255; }
+                if(split.color.g > 255) { split.color.g = 255; }
+                if(split.color.b > 255) { split.color.b = 255; }
+            }
+        }
     };
 
     var oldSpawnPlayer = Object.getPrototypeOf(gameServer).spawnPlayer;
