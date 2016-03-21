@@ -30,7 +30,62 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
     Commands.list.help = function(gameServer, split) {
         oldHelp.call(gameServer, split);
         console.log("[Console] juggernaut : set or view player's juggernautness");
+        console.log("[Console] kickname   : kick all players matching name");
+        console.log("[Console] killname   : kill all players matching name");
         console.log("[Console] ====================================================");
+    };
+
+    Commands.list.kickname = function(gameServer, split) {
+        var name = split[1];
+        if (!name) {
+            console.log("[Console] Please specify a player name!");
+            return;
+        }
+        name = name.toLowerCase();
+
+        console.log("[Console] Removing players '" + name + "'");
+
+        var count = 0;
+        for (var i in gameServer.clients) {
+            var ithName = gameServer.clients[i].playerTracker.name.toLowerCase().replace(/\s/g, '');
+            if (ithName == name || (name == "-" && ithName == '')) {
+                var client = gameServer.clients[i].playerTracker;
+                var len = client.cells.length;
+                for (var j = 0; j < len; j++) {
+                    gameServer.removeNode(client.cells[0]);
+                }
+                client.socket.close();
+                count++;
+            }
+        }
+
+        console.log("[Console] Kicked " + count + " players");
+    };
+
+    Commands.list.killname = function(gameServer,split) {
+        var name = split[1];
+        if (!name) {
+            console.log("[Console] Please specify a player name!");
+            return;
+        }
+        name = name.toLowerCase();
+
+        console.log("[Console] Removing players '" + name + "'");
+
+        var count = 0;
+        for (var i in gameServer.clients) {
+            var ithName = gameServer.clients[i].playerTracker.name.toLowerCase().replace(/\s/g, '');
+            if (ithName == name || (name == "-" && ithName == '')) {
+                var client = gameServer.clients[i].playerTracker;
+                var len = client.cells.length;
+                for (var j = 0; j < len; j++) {
+                    gameServer.removeNode(client.cells[0]);
+                }
+                count++;
+            }
+        }
+
+        console.log("[Console] Killed " + count + " players");
     };
 
     Commands.list.juggernaut = function(gameServer,split) {
