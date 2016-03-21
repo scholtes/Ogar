@@ -4,6 +4,8 @@ var PlayerCell = require('../entity/PlayerCell');
 var Cell = require('../entity/Cell');
 var MovingVirus = require('../entity/MovingVirus');
 var StickyCell = require('../entity/StickyCell');
+var Beacon = require('../entity/Beacon');
+var EjectedMass = require('../entity/EjectedMass');
 
 function Juggernaut() {
     Experimental.apply(this, Array.prototype.slice.call(arguments));
@@ -319,6 +321,16 @@ Juggernaut.prototype.onServerInit = function(gameServer) {
         }
         oldRemoveNode.call(this, check);
     };
+
+    var oldEjectedAutoMove = EjectedMass.prototype.onAutoMove;
+    EjectedMass.prototype.onAutoMove = function(gameServer) {
+        var beacon = gameServer.gameMode.beacon;
+        if (beacon && this.collisionCheck2(beacon.getSquareSize(), beacon.position)) {
+            beacon.feed(this, gameServer);
+            return true;
+        }
+        return oldEjectedAutoMove.call(this, gameServer);
+    };
 };
 
 Juggernaut.prototype.spawnMovingVirus = function(gameServer) {
@@ -469,6 +481,17 @@ Juggernaut.prototype.shootVirus = function(parent, gameServer) {
 };
 
 Juggernaut.prototype.onTick = function(gameServer) {
+    // Create a beacon if one doesn't exist
+    if(!this.beacon) {
+        this.beacon = new Beacon(
+                gameServer.getNextNodeId(),
+                null,
+                gameServer.getRandomPosition(),
+                gameServer.config.beaconMass
+        );
+        gameServer.addNode(this.beacon);
+    }
+
     // Mother Cell updates
     this.updateMotherCells(gameServer);
     this.updateStickyCells(gameServer);

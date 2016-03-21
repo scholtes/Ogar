@@ -109,7 +109,8 @@ function GameServer() {
         movingVirusMinAmount: 10, // Min number of moving viruses present on the board
         stickyMass: 75, // Mass of a sticky cell
         stickyMinAmount: 3, // Mass of a sticky cell
-        motherCellMaxMass: 400 // In juggernaut mode, mother cells shoot out viruses if they grow beyond this
+        motherCellMaxMass: 400, // In juggernaut mode, mother cells shoot out viruses if they grow beyond this
+        beaconMass: 500 // How large is the killer beacon?
     };
     // Parse config
     this.loadConfig();
@@ -861,6 +862,10 @@ GameServer.prototype.getCellsInRange = function(cell) {
                     }
                 }
                 break;
+            case 5: // Beacon
+                // Cannot eat beacon in juggernaut mode
+                // (this case never reached in other default modes)
+                continue;
             default:
                 break;
         }
